@@ -7,6 +7,7 @@ https://github.com/herrbischoff/country-ip-blocks
 Many thanks for providing GeoIP data.
 
 ## Usage
+Run the following commands in FreeBSD or OPNsense
 
 ```shell
 # make
