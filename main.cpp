@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
             default:
                 cout << "Usage: \n";
                 cout << application_name << " [-option]\n";
-                cout << application_name << " <without parameter>: the same as \"" << application_name << " -m -s\"\n";
+                cout << application_name << " (without parameter): the same as \"" << application_name << " -m\"\n";
                 cout << application_name << " -m\t" "Download and Parse GeoIP file in memory directly (faster)\n";
                 cout << application_name << " -f\t" "Download and Parse GeoIP file in /tmp (save memory)\n";
                 cout << application_name << " -s\t" "Slience mode (no stdout message)\n";
