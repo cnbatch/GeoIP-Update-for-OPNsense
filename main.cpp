@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
             default:
                 cout << "Usage: \n";
                 cout << application_name << " [-option]\n";
-                cout << application_name << " (without parameter): the same as \"" << application_name << " -m\"\n";
+                cout << application_name << " <without parameter>: the same as \"" << application_name << " -m\"\n";
                 cout << application_name << " -m\t" "Download and Parse GeoIP file in memory directly (faster)\n";
                 cout << application_name << " -f\t" "Download and Parse GeoIP file in /tmp (save memory)\n";
                 cout << application_name << " -s\t" "Slience mode (no stdout message)\n";
@@ -46,14 +46,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (!fs::exists("/usr/local/share/GeoIP/alias"))
+    if (!access_or_create_folder("/usr/local/share/GeoIP/alias", slience_mode))
     {
-        if (!fs::create_directory("/usr/local/share/GeoIP/alias"))
-        {
-            if(!slience_mode)
-                cerr << "Cannot access '/usr/local/share/GeoIP/alias'.\n\n";
-            return -1;
-        }
+        if (!slience_mode)
+            cerr << "Cannot access '/usr/local/share/GeoIP/alias'.\n\n";
+        return -1;
     }
 
     string json_record = R"({"address_count":{0},"file_count":{1},"timestamp":"{2}","locations_filename":"GeoLite2-Country-Locations-en.csv","address_sources":{"IPv4":"GeoLite2-Country-Blocks-IPv4.csv","IPv6":"GeoLite2-Country-Blocks-IPv6.csv"}})";

@@ -27,6 +27,36 @@ typedef size_t (*call_back_function_ptr)(char*, size_t, size_t, void*);
 CURLcode download_geoip_block(const std::string &url, void *write_to, call_back_function_ptr call_back);
 map<string, string> unpack_archive(shared_ptr<archive> current_archive_ptr);
 
+bool access_or_create_folder(const std::string &folder_name, bool slience_mode)
+{
+	fs::path target_folder = folder_name;
+	if (!fs::exists(target_folder))
+	{
+		if (!slience_mode) cout << target_folder << " not exist\n";
+		if (access_or_create_folder(target_folder.parent_path(), slience_mode))
+		{
+			if (access(target_folder.parent_path().c_str(), W_OK) != 0)
+			{
+				if (!slience_mode) cout << target_folder.parent_path() << " cannot write (no permission)\n";
+				return false;
+			}
+
+			if (fs::create_directory(target_folder))
+			{
+				if (!slience_mode) cout << target_folder << " created\n";
+			}
+			else
+			{
+				if (!slience_mode) cout << target_folder << " cannot create\n";
+				return false;
+			}
+		}
+		else return false;
+	}
+
+	return true;
+}
+
 bool download_geoip_block_file(const std::string &url, shared_ptr<FILE> temp_file)
 {
 	auto res = download_geoip_block(url, temp_file.get(),
