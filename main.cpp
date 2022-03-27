@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     }
 
     string json_record = R"({"address_count":{0},"file_count":{1},"timestamp":"{2}","locations_filename":"GeoLite2-Country-Locations-en.csv","address_sources":{"IPv4":"GeoLite2-Country-Blocks-IPv4.csv","IPv6":"GeoLite2-Country-Blocks-IPv6.csv"}})";
-    string url = "https://github.com/herrbischoff/country-ip-blocks/archive/master.zip";
+    string url = "https://codeload.github.com/herrbischoff/country-ip-blocks/zip/refs/heads/master";
     map<string, string> filename_content_map;
     if (parse_in_memory)
     {
