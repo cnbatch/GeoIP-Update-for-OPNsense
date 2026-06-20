@@ -2,11 +2,30 @@
 Update GeoIP data on OPNsense without using Maxmind's account.
 
 ## Source of GeoIP
-https://github.com/herrbischoff/country-ip-blocks
+https://github.com/ipverse/geo-ip-blocks
 
 Many thanks for providing GeoIP data.
 
 ## Usage
+### Option 1: Download binary file
+Download the latest release from https://github.com/cnbatch/GeoIP-Update-for-OPNsense/releases
+
+Run the following commands in OPNsense
+
+```shell
+# fetch https://github.com/cnbatch/GeoIP-Update-for-OPNsense/releases/latest/download/updategeoip.zip
+# unzip updategeoip.zip
+# chmod +x updategeoip
+# mv updategeoip /usr/local/bin
+```
+
+and run it
+
+```shell
+# updategeoip
+```
+
+### Option 2: Compile and install
 Run the following commands in FreeBSD or OPNsense
 
 ```shell

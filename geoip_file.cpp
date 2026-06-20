@@ -1,9 +1,11 @@
 #include "geoip_file.hpp"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <filesystem>
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include <curl/curl.h>
 #include <archive.h>
 #include <archive_entry.h>
@@ -139,24 +141,53 @@ map<string, string> unpack_archive(shared_ptr<archive> current_archive_ptr)
 		auto file_size = archive_entry_size(entry);
 		if (file_size <= 0)
 			continue;
-		string filename_in_zip = archive_entry_pathname(entry);
-		if (filename_in_zip.find("cidr") == filename_in_zip.npos)
+
+		string filepath_in_zip = archive_entry_pathname(entry);
+		size_t country_pos = filepath_in_zip.find("/country/");
+		if (country_pos == string::npos)
 			continue;
-		fs::path filename_virtual = "/" + filename_in_zip;
-		string filename = filename_virtual.filename();
-		filename.erase(filename.find("."));
-		string parent_folder_name = filename_virtual.parent_path().filename();
-		filename = filename + "-" + parent_folder_name;
-		transform(begin(filename), end(filename), begin(filename),
-			[](unsigned char c) -> unsigned char { return toupper(c); });
-		filename.replace(filename.find("IPV"), 3, "IPv");
+
+		size_t iso_start = country_pos + 9; // length of "/country/"
+		size_t iso_end = filepath_in_zip.find("/", iso_start);
+		if (iso_end == string::npos)
+			continue;
+
+		string iso_code = filepath_in_zip.substr(iso_start, iso_end - iso_start);
+		if (iso_code.length() != 2)
+			continue;
+
+		string filename = filepath_in_zip.substr(iso_end + 1);
+		string file_type;
+
+		if (filename.find("ipv4") != string::npos)
+			file_type = "IPv4";
+		else if (filename.find("ipv6") != string::npos)
+			file_type = "IPv6";
+		else
+			continue;
 
 		vector<char> buffer(file_size + 1, 0);
 		auto data_size = archive_read_data(current_archive, &buffer[0], file_size);
 		if (data_size <= 0)
 			continue;
 
-		filename_content_map[filename] = buffer.data();
+		string content(buffer.data());
+		string processed_content;
+		istringstream iss(content);
+		string line;
+
+		while (getline(iss, line))
+		{
+			if (line.empty() || line[0] == '#')
+				continue;
+			processed_content += line + "\n";
+		}
+
+		transform(iso_code.begin(), iso_code.end(), iso_code.begin(),
+			[](unsigned char c) -> unsigned char { return toupper(c); });
+
+		string output_filename = iso_code + "-" + file_type;
+		filename_content_map[output_filename] = processed_content;
 	}
 	return filename_content_map;
 }
