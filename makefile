@@ -1,25 +1,33 @@
 CXXFLAGS = -Wall -O3 -std=c++17
 INCLUDEDIR = -I./ -I/usr/include/ -I/usr/local/include/
 LDFLAGS = -L/usr/lib -L/usr/local/lib 
-LDLIBS = -lcurl -larchive -lc++
-OUTPUT = updategeoip
-SOURCES = main.cpp geoip_file.cpp
-OBJECTS=${SOURCES:.cpp=.o}
+LDLIBS = -lcurl -larchive -lmd -lc++
 
-all : ${OUTPUT}
+OBJDIR = bin
+OUTPUT = updategeoip
+TARGET = ${OBJDIR}/${OUTPUT}
+
+SOURCES = main.cpp geoip_file.cpp
+OBJECTS = ${SOURCES:S/^/${OBJDIR}\//:S/.cpp/.o/}
+
+all : ${TARGET}
 
 install:
-	@cp ${OUTPUT} /usr/local/bin
+	-@mv /usr/local/bin/${OUTPUT} /usr/local/sbin/${OUTPUT} 2>/dev/null
+	@cp ${TARGET} /usr/local/sbin/${OUTPUT}
 
 uninstall:
-	@rm /usr/local/bin/${OUTPUT}
+	-@rm /usr/local/bin/${OUTPUT} 2>/dev/null
+	-@rm /usr/local/sbin/${OUTPUT} 2>/dev/null
 
 clean:
-	@rm -f ${OUTPUT} *.o *~
+	@rm -rf ${OBJDIR} *~
 
-${OUTPUT}: ${OBJECTS}
-	@cc ${LDFLAGS} ${LDLIBS} ${OBJECTS} -o ${OUTPUT}
+${TARGET}: ${OBJECTS}
+	@cc ${LDFLAGS} ${LDLIBS} ${OBJECTS} -o ${TARGET}
 
-.cpp.o:
-	@cc ${INCLUDEDIR} ${CXXFLAGS} -c ${.IMPSRC} -o ${.TARGET}
-
+.for src in ${SOURCES}
+${OBJDIR}/${src:S/.cpp/.o/}: ${src}
+	@mkdir -p ${OBJDIR}
+	@cc ${INCLUDEDIR} ${CXXFLAGS} -c ${src} -o ${.TARGET}
+.endfor

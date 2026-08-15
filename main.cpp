@@ -5,6 +5,7 @@
 #include <chrono>
 #include <algorithm>
 #include <unistd.h>
+#include <md5.h>
 #include "geoip_file.hpp"
 
 using namespace std;
@@ -57,15 +58,22 @@ int main(int argc, char *argv[])
     string json_record = R"({"address_count":{0},"file_count":{1},"timestamp":"{2}","locations_filename":"GeoLite2-Country-Locations-en.csv","address_sources":{"IPv4":"GeoLite2-Country-Blocks-IPv4.csv","IPv6":"GeoLite2-Country-Blocks-IPv6.csv"}})";
     string url = "https://github.com/ipverse/geo-ip-blocks/archive/refs/heads/master.zip";
     map<string, string> filename_content_map;
+    char md5_hex_output[48] = {};
     if (parse_in_memory)
     {
+        vector<char> downloaded_zip_file = download_geoip_block_memory(url);
+        if (MD5Data((const unsigned char *)downloaded_zip_file.data(), downloaded_zip_file.size(), md5_hex_output) != nullptr)
+        {
+            ofstream md5_file("/usr/local/share/GeoIP/alias._source_hash.md5", ios::trunc);
+            md5_file << md5_hex_output;
+        }
+
         if (slience_mode)
         {
-            filename_content_map = unpack_archive(download_geoip_block_memory(url));
+            filename_content_map = unpack_archive(downloaded_zip_file);
         }
         else
         {
-            vector<char> downloaded_zip_file = download_geoip_block_memory(url);
             if (downloaded_zip_file.size())
                 filename_content_map = unpack_archive(downloaded_zip_file);
             else
